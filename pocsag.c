@@ -54,6 +54,15 @@
 
 #define POCSAG_MESSAGE_DETECTION 0x80000000 // Most significant bit is a one
 
+#define ETD_FUNCTION_01 "Outbound Train"
+#define ETD_FUNCTION_11 "Inbound Train"
+
+typedef struct etdinfo {
+	char trainnum[6];
+	char trainspd[4];
+	char trainkm[6];
+} etdinfo;
+
 #define POSCAG
 /* ---------------------------------------------------------------------- */
 
@@ -87,6 +96,17 @@ static inline unsigned char even_parity(uint32_t data)
     temp = temp ^ (temp >> 2);
     temp = temp ^ (temp >> 1);
     return temp & 1;
+}
+
+static inline int parse_etd(const char *num_string, etdinfo *info) {
+	if (strlen(num_string) != 15) return 0;
+	strncpy(info->trainnum, num_string, 5);
+	info->trainnum[5] = 0;
+	strncpy(info->trainspd, num_string + 6, 3);
+	info->trainspd[4] = 0;
+	strncpy(info->trainkm, num_string + 10, 5);
+	info->trainkm[5] = 0;
+	return 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -582,6 +602,41 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
             int guess_skyper = 0;
             int unsure = 0;
             int func = 0;
+			char timestr[70];
+			etdinfo info;
+
+			if (pocsag_mode == POCSAG_MODE_ETD) {
+				strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", localtime(time(NULL));
+				print_msg_numeric(&s->l2.pocsag, num_string, sizeof(num_string));
+				if ((s->l2.pocsag.address != -2) || (s->l2.pocsag.function != -2)) {
+					if (s->l2.pocsag.address == 1234000) {
+						// etd info
+						if (parse_etd(num_string, &info)) {
+							verbprintf(0, "%s Train Info: NUM:%s, SPD:%s, KM:%s", timestr, info.trainnum, info.trainspd, info.trainkm);
+						}
+						else {
+							// parse fail.
+							verbprintf(0, "%s Train Info: parse failed. Data: %s.", timestr, num_string);
+						}
+					}
+					else if (s->l2.pocsag.address == 1234008) {
+						// time info
+						verbprintf(0, "%s Time Info: %s.", timestr, num_string+1);
+					}
+					else {
+						verbprintf(0, "%s: Other Info: %7lu  Function: %1hhi  ", timestr,
+							s->l2.pocsag.address, s->l2.pocsag.function);
+						verbprintf(0, "Numeric: %s", num_string);
+					}
+				}
+				else {
+					verbprintf(0, "%s: Anonymous Info: Address:       -  Function: -  ", timestr);
+					verbprintf(0, "Numeric: %s", num_string);
+				}
+				if (!sync) verbprintf(2, "<LOST SYNC>");
+				verbprintf(0, "\n");
+				return;
+			}
 
             guess_num = print_msg_numeric(&s->l2.pocsag, num_string, sizeof(num_string));
             guess_alpha = print_msg_alpha(&s->l2.pocsag, alpha_string, sizeof(alpha_string));

@@ -583,7 +583,8 @@ static const char usage_str[] = "\n"
         "  -i         : POCSAG: Inverts the input samples. Try this if decoding fails.\n"
         "  -p         : POCSAG: Show partially received messages.\n"
         "  -f <mode>  : POCSAG: Overrides standards and forces decoding of data as <mode>\n"
-        "                       (<mode> can be 'numeric', 'alpha', 'skyper' or 'auto')\n"
+        "                       (<mode> can be 'numeric', 'alpha', 'skyper', 'etd' or 'auto')\n"
+		"                       'etd' for China End-of-Train Device, auto add POCSAG1200 demodulation module.\n"
         "  -b <level> : POCSAG: BCH bit error correction level. Set 0 to disable, default is 2.\n"
         "                       Lower levels increase performance and lower false positives.\n"
         "  -C <cs>    : POCSAG: Set Charset.\n"
@@ -729,14 +730,23 @@ intypefound:
         case 'f':
             if(!pocsag_mode)
             {
-                if(!strncmp("numeric",optarg, sizeof("numeric")))
-                    pocsag_mode = POCSAG_MODE_NUMERIC;
-                else if(!strncmp("alpha",optarg, sizeof("alpha")))
-                    pocsag_mode = POCSAG_MODE_ALPHA;
-                else if(!strncmp("skyper",optarg, sizeof("skyper")))
-                    pocsag_mode = POCSAG_MODE_SKYPER;
-                else if(!strncmp("auto",optarg, sizeof("auto")))
-                    pocsag_mode = POCSAG_MODE_AUTO;
+				if (!strncmp("numeric", optarg, sizeof("numeric")))
+					pocsag_mode = POCSAG_MODE_NUMERIC;
+				else if (!strncmp("alpha", optarg, sizeof("alpha")))
+					pocsag_mode = POCSAG_MODE_ALPHA;
+				else if (!strncmp("skyper", optarg, sizeof("skyper")))
+					pocsag_mode = POCSAG_MODE_SKYPER;
+				else if (!strncmp("auto", optarg, sizeof("auto")))
+					pocsag_mode = POCSAG_MODE_AUTO;
+				else if (!strncmp("etd", optarg, sizeof("etd"))) {
+					pocsag_mode = POCSAG_MODE_ETD;
+					for (i = 0; (unsigned int)i < NUMDEMOD; i++) {
+						if (!strcasecmp("POCSAG1200", dem[i]->name)) {
+							MASK_SET(i);
+							break;
+						}
+					}
+				}
             }else fprintf(stderr, "a POCSAG mode has already been selected!\n");
             break;
             
