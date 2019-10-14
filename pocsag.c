@@ -55,8 +55,8 @@
 
 #define POCSAG_MESSAGE_DETECTION 0x80000000 // Most significant bit is a one
 
-#define ETD_FUNCTION_01 "Outbound Train"
-#define ETD_FUNCTION_11 "Inbound Train"
+#define ETD_FUNCTION_01 "Outbound"
+#define ETD_FUNCTION_11 "Inbound"
 
 typedef struct etdinfo {
 	char trainnum[6];
@@ -619,11 +619,11 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
 						if (s->l2.pocsag.function == 1) direction = ETD_FUNCTION_01;
 						if (s->l2.pocsag.function == 3) direction = ETD_FUNCTION_11;
 						if (parse_etd(num_string, &info)) {
-							verbprintf(0, "%s Train Info: Direction:%s, NUM:%s, SPD:%s, KM:%s", timestr, direction, info.trainnum, info.trainspd, info.trainkm);
+							verbprintf(0, "%s Train Info: DIR:%s, NUM:%s, SPD:%s, KM:%s", timestr, direction, info.trainnum, info.trainspd, info.trainkm);
 						}
 						else {
 							// parse fail.
-							verbprintf(0, "%s Train Info: parse failed. Direction:%s, Data: %s.", timestr, direction, num_string);
+							verbprintf(0, "%s Train Info: parse failed. DIR:%s, Data: %s.", timestr, direction, num_string);
 						}
 					}
 					else if (s->l2.pocsag.address == 1234008) {
