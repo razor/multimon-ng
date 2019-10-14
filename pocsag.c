@@ -104,7 +104,7 @@ static inline int parse_etd(const char *num_string, etdinfo *info) {
 	strncpy(info->trainnum, num_string, 5);
 	info->trainnum[5] = 0;
 	strncpy(info->trainspd, num_string + 6, 3);
-	info->trainspd[4] = 0;
+	info->trainspd[3] = 0;
 	strncpy(info->trainkm, num_string + 10, 5);
 	info->trainkm[5] = 0;
 	return 1;
@@ -605,6 +605,7 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
             int func = 0;
 			char timestr[70];
 			etdinfo info;
+			char *direction;
 
 			if (pocsag_mode == POCSAG_MODE_ETD) {
 				time_t t = time(NULL);
@@ -613,12 +614,14 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
 				if ((s->l2.pocsag.address != -2) || (s->l2.pocsag.function != -2)) {
 					if (s->l2.pocsag.address == 1234000) {
 						// etd info
+						if (s->l2.pocsag.function == 1) direction = ETD_FUNCTION_01;
+						if (s->l2.pocsag.function == 3) direction = ETD_FUNCTION_11;
 						if (parse_etd(num_string, &info)) {
-							verbprintf(0, "%s Train Info: NUM:%s, SPD:%s, KM:%s", timestr, info.trainnum, info.trainspd, info.trainkm);
+							verbprintf(0, "%s Train Info: Direction:%s NUM:%s, SPD:%s, KM:%s", timestr, direction, info.trainnum, info.trainspd, info.trainkm);
 						}
 						else {
 							// parse fail.
-							verbprintf(0, "%s Train Info: parse failed. Data: %s.", timestr, num_string);
+							verbprintf(0, "%s Train Info: parse failed. Direction:%s Data: %s.", timestr, direction, num_string);
 						}
 					}
 					else if (s->l2.pocsag.address == 1234008) {
