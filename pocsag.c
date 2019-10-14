@@ -61,7 +61,7 @@
 typedef struct etdinfo {
 	char trainnum[6];
 	char trainspd[4];
-	char trainkm[6];
+	char trainkm[7];
 } etdinfo;
 
 #define POSCAG
@@ -105,8 +105,10 @@ static inline int parse_etd(const char *num_string, etdinfo *info) {
 	info->trainnum[5] = 0;
 	strncpy(info->trainspd, num_string + 6, 3);
 	info->trainspd[3] = 0;
-	strncpy(info->trainkm, num_string + 10, 5);
-	info->trainkm[5] = 0;
+	strncpy(info->trainkm, num_string + 10, 4);
+	info->trainkm[4] = '.';
+	info->trainkm[5] = num_string + 14;
+	info->trainkm[6] = 0;
 	return 1;
 }
 
