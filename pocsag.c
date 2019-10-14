@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 /* ---------------------------------------------------------------------- */
 
@@ -606,7 +607,8 @@ static void pocsag_printmessage(struct demod_state *s, bool sync)
 			etdinfo info;
 
 			if (pocsag_mode == POCSAG_MODE_ETD) {
-				strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", localtime(time(NULL));
+				time_t t = time(NULL);
+				strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", localtime(&t));
 				print_msg_numeric(&s->l2.pocsag, num_string, sizeof(num_string));
 				if ((s->l2.pocsag.address != -2) || (s->l2.pocsag.function != -2)) {
 					if (s->l2.pocsag.address == 1234000) {
